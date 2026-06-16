@@ -53,7 +53,9 @@ Liquid Lyrics includes an optional media player inside the lyrics view.
 
 The player can be shown or hidden and is styled to match the Liquid Lyrics interface.
 
-<img width="443" height="707" alt="image" src="https://github.com/user-attachments/assets/6d7e1bcb-2ec9-47f8-9aff-28a6c707d3c8" />
+<p align="center">
+  <img width="443" height="707" alt="image" src="https://github.com/user-attachments/assets/6d7e1bcb-2ec9-47f8-9aff-28a6c707d3c8" />
+</p>
 
 ---
 
