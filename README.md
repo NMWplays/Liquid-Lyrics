@@ -65,7 +65,7 @@ Liquid Lyrics brings this feature back with a modern design.
 
 The sidebar lyrics card can be collapsed or expanded whenever you want.
 
-<img width="537" height="1172" alt="Sidebar-Lyrics" src="https://github.com/user-attachments/assets/40d4b036-f42e-4342-b7d4-177d50b3d57c" />
+<img width="537" height="537" alt="Sidebar-Lyrics" src="https://github.com/user-attachments/assets/40d4b036-f42e-4342-b7d4-177d50b3d57c" />
 
 ---
 
