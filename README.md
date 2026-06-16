@@ -21,6 +21,8 @@ For lyrics formats that do not support word-by-word syncing, Liquid Lyrics can a
 
 The extension is built with performance in mind, with more optimization planned for future updates.
 
+<img width="2557" height="1375" alt="image" src="https://github.com/user-attachments/assets/28fe5b5b-2d4d-42cc-90e4-f22b81900d0f" />
+
 ---
 
 ### Romanization Support
@@ -28,6 +30,8 @@ The extension is built with performance in mind, with more optimization planned 
 Romanized lyrics can be toggled on or off.
 
 This is useful for songs in languages such as Japanese, Korean, Chinese and other non-Latin scripts.
+
+<img width="2557" height="1378" alt="image" src="https://github.com/user-attachments/assets/cce9f4a7-2568-433b-a72b-a4b9010f978d" />
 
 ---
 
@@ -39,6 +43,8 @@ It is designed to match the look of Glowify and Liquify, including glass effects
 
 Animated background support is also included.
 
+<img width="2557" height="1377" alt="image" src="https://github.com/user-attachments/assets/f6bb810e-e0b0-4bcf-914f-44038d14758f" />
+
 ---
 
 ### Optional Media Player
@@ -46,6 +52,8 @@ Animated background support is also included.
 Liquid Lyrics includes an optional media player inside the lyrics view.
 
 The player can be shown or hidden and is styled to match the Liquid Lyrics interface.
+
+<img width="443" height="707" alt="image" src="https://github.com/user-attachments/assets/6d7e1bcb-2ec9-47f8-9aff-28a6c707d3c8" />
 
 ---
 
@@ -56,6 +64,8 @@ Spotify once had a sidebar lyrics card and later removed it.
 Liquid Lyrics brings this feature back with a modern design.
 
 The sidebar lyrics card can be collapsed or expanded whenever you want.
+
+<img width="537" height="1172" alt="Sidebar-Lyrics" src="https://github.com/user-attachments/assets/40d4b036-f42e-4342-b7d4-177d50b3d57c" />
 
 ---
 
