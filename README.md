@@ -1,5 +1,3 @@
-# Liquid-Lyrics
-
 # Liquid Lyrics
 
 Liquid Lyrics is a modern Spicetify lyrics extension designed specifically for **Glowify** and **Liquify**.
