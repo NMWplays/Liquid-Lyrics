@@ -3,7 +3,7 @@
     "name": "Liquid Lyrics",
     "description": "A modern lyrics extension for designed for Glowify & Liquify",
     "preview": "preview.png",
-    "main": "dist/liquid-lyrics.js",
+    "main": "liquid-lyrics.js",
     "readme": "README.md",
     "authors": [
       {
