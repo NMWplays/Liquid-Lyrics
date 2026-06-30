@@ -362,7 +362,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow: var(--glass-shadow, none) !important;
+  box-shadow: var(--liquify-shadow, none) !important;
   border-radius: inherit;
 }
 
