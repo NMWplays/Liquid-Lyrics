@@ -1,13 +1,14 @@
 # Liquid Lyrics
 
-Liquid Lyrics is a modern Spicetify lyrics extension designed specifically for **Glowify** and **Liquify**.
+Liquid Lyrics is a modern Spicetify lyrics extension.
 
-It brings a smooth, theme-matching lyrics experience to Spotify with word-by-word synced lyrics, fullscreen lyrics, romanization support, an optional media player and a collapsible sidebar lyrics card.
+It brings a smooth, theme-matching lyrics experience to Spotify with word-by-word synced
+lyrics, fullscreen lyrics, romanization support, an optional media player and a collapsible
+sidebar lyrics card.
 
-> Liquid Lyrics can technically be installed with other themes too, but it is mainly designed for Glowify and Liquify.
-> When used with other themes, some parts may not be styled correctly or may not fully match the theme.
-
----
+It was built alongside **Glowify** and **Liquify** and still fits those two best, but it is no
+longer made just for them - under any other theme it now picks up that theme's look instead.
+And if you want something else entirely, the new settings menu lets you build your own.
 
 ## Features
 
@@ -15,109 +16,126 @@ It brings a smooth, theme-matching lyrics experience to Spotify with word-by-wor
 
 Liquid Lyrics supports smooth synced lyrics with fluid word-by-word animations.
 
-For lyrics formats that do not support word-by-word syncing, Liquid Lyrics can also display classic block-style lyrics.
+For lyrics formats that do not support word-by-word syncing, it can also display classic
+block-style lyrics. If you prefer less movement, there are two calmer display modes.
 
-The extension is built with performance in mind, with more optimization planned for future updates.
-
-<img width="2557" height="1375" alt="image" src="https://github.com/user-attachments/assets/28fe5b5b-2d4d-42cc-90e4-f22b81900d0f" />
-
----
+<img width="2557" height="1375" alt="image" src="https://github.com/user-attachments/assets/12a9cffd-df8c-42cf-ab4e-7f96de7338c9" />
 
 ### Romanization Support
 
 Romanized lyrics can be toggled on or off.
 
-This is useful for songs in languages such as Japanese, Korean, Chinese and other non-Latin scripts.
+This is useful for songs in languages such as Japanese, Korean, Chinese and other non-Latin
+scripts.
 
-<img width="2557" height="1378" alt="image" src="https://github.com/user-attachments/assets/cce9f4a7-2568-433b-a72b-a4b9010f978d" />
+For Japanese songs there is now a **Furigana** mode as well. Instead of replacing the lyrics
+with latin letters, it keeps the original text and puts the reading above it - so you can
+still read along if you know some Japanese. The button cycles through off, Romaji and
+Furigana, and Furigana only shows up on songs that actually have Japanese in them.
 
----
+<img width="2557" height="1380" alt="image" src="https://github.com/user-attachments/assets/995eaa1e-3124-482b-96ab-ea09724f66fa" />
+
+<img width="2557" height="1377" alt="image" src="https://github.com/user-attachments/assets/6ed6b42e-b7cd-44ce-8ac6-43c9dd05bfe9" />
+
+### Settings Menu
+
+Liquid Lyrics now has a full settings menu, found in the Spicetify profile menu under
+**Liquid Lyrics Settings**.
+
+Almost everything can be changed there — buttons, backgrounds, the media player, the sidebar
+card, fullscreen behaviour and the lyrics themselves. Every change applies right away.
+
+<img width="2557" height="1377" alt="image" src="https://github.com/user-attachments/assets/29aad758-ffac-4d78-be3d-e5c224c2f703" />
+
+### Backgrounds
+
+The background behind the lyrics can be a plain color, a picture, the animated cover-art
+blobs, or **Kawarp** — a new flowing artwork effect, and the new default.
+
+The picture can come from the album art, a link, or a file on your computer, and there are
+sliders for blur, colour, brightness and motion. You can also let it fill Spotify's whole
+right sidebar.
 
 ### Fullscreen Lyrics Mode
 
-Liquid Lyrics includes a dedicated fullscreen lyrics view for a more immersive listening experience.
+Liquid Lyrics includes a dedicated fullscreen lyrics view for a more immersive listening
+experience, plus a cinema mode that fills the Spotify window without leaving it.
 
-It is designed to match the look of Glowify and Liquify, including glass effects, accent colors and the overall modern theme style.
+In both, the interface can fade away on its own while you listen and come back the moment you
+move the mouse.
 
-Animated background support is also included.
-
-<img width="2557" height="1377" alt="image" src="https://github.com/user-attachments/assets/f6bb810e-e0b0-4bcf-914f-44038d14758f" />
-
----
+<img width="2557" height="1438" alt="image" src="https://github.com/user-attachments/assets/3b95bea2-135a-4c56-924f-01309ad1166c" />
 
 ### Optional Media Player
 
 Liquid Lyrics includes an optional media player inside the lyrics view.
 
-The player can be shown or hidden and is styled to match the Liquid Lyrics interface.
+There are two layouts to choose from, it can sit on either side, and you decide which track
+details it shows.
 
-<p align="center">
-  <img width="443" height="707" alt="image" src="https://github.com/user-attachments/assets/6d7e1bcb-2ec9-47f8-9aff-28a6c707d3c8" />
-</p>
+<img width="1915" height="1167" alt="image" src="https://github.com/user-attachments/assets/951fb53f-4088-43a5-8b6d-99c23bf256ec" />
+<img width="1912" height="1162" alt="image" src="https://github.com/user-attachments/assets/044475c7-a626-48a9-a6a6-c5c989eec09a" />
+<img width="1927" height="1175" alt="image" src="https://github.com/user-attachments/assets/ee993f50-e81c-48a9-9aa1-4f5170a9d0f3" />
 
----
 
 ### Sidebar Lyrics Card
 
 Spotify once had a sidebar lyrics card and later removed it.
 
-Liquid Lyrics brings this feature back with a modern design.
-
-The sidebar lyrics card can be collapsed or expanded whenever you want.
+Liquid Lyrics brings this feature back with a modern design. The card can be collapsed or
+expanded whenever you want.
 
 <p align="center">
-  <img width="350" alt="Sidebar Lyrics" src="https://github.com/user-attachments/assets/35fe2ae7-53c4-4447-b715-36283cc036cd" />
+  <img src="https://github.com/user-attachments/assets/b1d2aa0d-2ac6-4bbe-ad5e-36c4adb8c953" width="260">
+  <img src="https://github.com/user-attachments/assets/9a9bed2a-4da4-4f4f-9ba3-44ec762eec3c" width="260">
 </p>
 
+### Sync Editor
 
----
+If a song has no lyrics, or bad ones, you can write your own — including word-by-word timing.
 
-## Designed for Glowify and Liquify
+Keep the result on your device, or publish it so everyone else gets it too.
 
-Liquid Lyrics was created to work together with:
+<img width="2557" height="1372" alt="image" src="https://github.com/user-attachments/assets/741b9642-5348-48bb-9886-87fe9044eaa5" />
 
-* Glowify
-* Liquify
+## Themes
 
-It is built around their visual style, including:
+Liquid Lyrics is designed around the style of **Glowify** and **Liquify**: glass effects,
+accent colors, rounded corners and smooth animations.
 
-* glass effects
-* accent colors
-* rounded corners
-* smooth animations
-* modern Spotify UI styling
+With any other theme it now takes its look from that theme's own sidebar panels, so it fits in
+rather than standing out. Accent colors come from the album art, so there is always one.
 
-You can still install Liquid Lyrics with other Spicetify themes, but the extension may not look fully correct outside of Glowify and Liquify.
-
----
+Some details may still not match perfectly outside of Glowify and Liquify. If something looks
+off, most of it can be changed in the settings.
 
 ## Installation
 
 ### Marketplace Installation
 
-Once Liquid Lyrics is available in the Spicetify Marketplace, you will be able to install it directly from there.
+Once Liquid Lyrics is available in the Spicetify Marketplace, you will be able to install it
+directly from there.
 
 1. Open Spotify
 2. Open the Spicetify Marketplace
-3. Search for `Liquid Lyrics`
+3. Search for Liquid Lyrics
 4. Click install
 5. Reload Spotify
 
----
-
 ### Manual Installation
 
-Download the latest `liquid-lyrics.js` file and place it inside your Spicetify extensions folder.
+Download the latest `liquid-lyrics.js` file and place it inside your Spicetify extensions
+folder.
 
-Windows:
+**Windows:**
 
-```txt
+```
 %appdata%\spicetify\Extensions\
 ```
 
-Linux / macOS:
+**Linux / macOS:**
 
-```txt
+```
 ~/.config/spicetify/Extensions/
 ```
 
@@ -128,36 +146,27 @@ spicetify config extensions liquid-lyrics.js
 spicetify apply
 ```
 
----
-
 ## Compatibility
 
 Liquid Lyrics is designed for the current Spotify and Spicetify UI.
 
-Because Spotify updates its desktop client frequently, some parts of the extension may break after Spotify updates.
-Updates and fixes will be released when needed.
-
----
+Because Spotify updates its desktop client frequently, some parts of the extension may break
+after Spotify updates. Updates and fixes will be released when needed.
 
 ## Roadmap
 
 Planned improvements:
 
-* more performance optimizations
-* improved theme settings
-* more customization options
-* better fallback styling for unsupported themes
-* more fullscreen lyrics improvements
-
----
+- more performance optimizations
+- more customization options
+- further polish for other themes
+- more fullscreen lyrics improvements
 
 ## Credits
 
-Created by **NMW**.
+Created by NMW.
 
-Designed for the Glowify and Liquify Spicetify themes.
-
----
+Built alongside the Glowify and Liquify Spicetify themes.
 
 ## License
 
