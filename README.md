@@ -42,7 +42,7 @@ Furigana, and Furigana only shows up on songs that actually have Japanese in the
 Liquid Lyrics now has a full settings menu, found in the Spicetify profile menu under
 **Liquid Lyrics Settings**.
 
-Almost everything can be changed there — buttons, backgrounds, the media player, the sidebar
+Almost everything can be changed there - buttons, backgrounds, the media player, the sidebar
 card, fullscreen behaviour and the lyrics themselves. Every change applies right away.
 
 <img width="2557" height="1377" alt="image" src="https://github.com/user-attachments/assets/29aad758-ffac-4d78-be3d-e5c224c2f703" />
@@ -50,7 +50,7 @@ card, fullscreen behaviour and the lyrics themselves. Every change applies right
 ### Backgrounds
 
 The background behind the lyrics can be a plain color, a picture, the animated cover-art
-blobs, or **Kawarp** — a new flowing artwork effect, and the new default.
+blobs, or **Kawarp** - a new flowing artwork effect, and the new default.
 
 The picture can come from the album art, a link, or a file on your computer, and there are
 sliders for blur, colour, brightness and motion. You can also let it fill Spotify's whole
