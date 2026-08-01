@@ -1,7 +1,7 @@
 [
   {
     "name": "Liquid Lyrics",
-    "description": "A modern lyrics extension designed for Glowify & Liquify",
+    "description": "A modern lyrics extension designed for Glowify & Liquify with adaptive styling for other Spicetify themes",
     "preview": "preview.png",
     "main": "https://nmwplays.github.io/Liquid-Lyrics/liquid-lyrics.js",
     "readme": "README.md",
