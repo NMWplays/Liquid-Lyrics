@@ -43,8 +43,11 @@ along if you know some Japanese. The button cycles through off, Romaji and Furig
 Furigana only shows up on songs that actually have Japanese in them.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/111903bd-06b9-42b3-8270-4b650487cc95" width="49%">
-  <img src="https://github.com/user-attachments/assets/439069d6-bbca-4d0c-a146-fc6c87acd658" width="49%">
+  <img src="https://github.com/user-attachments/assets/111903bd-06b9-42b3-8270-4b650487cc95" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/439069d6-bbca-4d0c-a146-fc6c87acd658" width="100%">
 </p>
 
 ### Settings Menu
@@ -105,8 +108,11 @@ Player controls appear in the control pill automatically in fullscreen, so play,
 skip stay within reach even when the song card sits far off to one side.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/aad14920-2ff9-43e3-828f-22e73c4f89e2" width="49%">
-  <img src="https://github.com/user-attachments/assets/eebf8d26-8196-4cec-b277-e1210a0fe01d" width="49%">
+  <img src="https://github.com/user-attachments/assets/aad14920-2ff9-43e3-828f-22e73c4f89e2" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/eebf8d26-8196-4cec-b277-e1210a0fe01d" width="100%">
 </p>
 
 ### Optional Media Player
@@ -120,18 +126,27 @@ When a song has no lyrics at all, the panel does not have to show a message. It 
 player enlarged in the middle instead, or the cover art spinning like a record.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/aa503ed7-1096-4cfa-b71a-a7ca7388361a" width="49%">
-  <img src="https://github.com/user-attachments/assets/40078a74-ea8e-4933-90b9-ecae20447b11" width="49%">
+  <img src="https://github.com/user-attachments/assets/aa503ed7-1096-4cfa-b71a-a7ca7388361a" width="70%">
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/aee3f73f-0c64-4e9e-8890-909a99f8e6b6" width="49%">
-  <img src="https://github.com/user-attachments/assets/15f75135-fa90-4afb-b1a1-70eae199b876" width="49%">
+  <img src="https://github.com/user-attachments/assets/40078a74-ea8e-4933-90b9-ecae20447b11" width="70%">
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/2c56c3c0-1010-4ef0-b8d3-e6407371d5f4" width="49%">
-  <img src="https://github.com/user-attachments/assets/45e8aad2-5b9c-4c6d-800c-c42872c107ea" width="49%">
+  <img src="https://github.com/user-attachments/assets/aee3f73f-0c64-4e9e-8890-909a99f8e6b6" width="70%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/15f75135-fa90-4afb-b1a1-70eae199b876" width="70%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2c56c3c0-1010-4ef0-b8d3-e6407371d5f4" width="70%">
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/45e8aad2-5b9c-4c6d-800c-c42872c107ea" width="70%">
 </p>
 
 
