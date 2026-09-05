@@ -168,7 +168,7 @@ opened, or expanded into a large view, and its height and minimum height are you
 
 If a song has no lyrics, or bad ones, you can write your own, including word-by-word timing.
 
-Keep the result on your device, or publish it so everyone else gets it too.
+Your edits are saved locally on your device and are not uploaded or shared with anyone.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/150cc686-76a4-4820-9a84-684ddd1f6b0c" width="100%">
