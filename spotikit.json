@@ -1,0 +1,23 @@
+{
+  "type": "extension",
+  "name": "Liquid Lyrics",
+  "description": "A modern lyrics extension designed for Liquify & Glowify with adaptive styling for other themes",
+  "branch": "spotikit",
+  "preview": "preview.png",
+  "readme": "README.md",
+  "authors": [
+    {
+      "name": "NMW",
+      "url": "https://github.com/NMWplays"
+    }
+  ],
+  "tags": [
+    "lyrics",
+    "fullscreen",
+    "romanization",
+    "glowify",
+    "liquify"
+  ],
+  "spotify": "1.3.6",
+  "main": "liquid-lyrics.js"
+}
