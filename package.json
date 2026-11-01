@@ -1,0 +1,22 @@
+{
+  "name": "liquid-lyrics",
+  "version": "1.0.0",
+  "description": "Lyrics extension for SpotiKit",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "deploy": "node esbuild.config.mjs --deploy"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@kawarp/core": "^1.2.0",
+    "aromanize": "^0.1.5",
+    "kuromoji": "^0.1.2",
+    "kuroshiro": "^1.2.0",
+    "lenis": "^1.3.25",
+    "traditional-or-simplified": "^1.0.3"
+  }
+}

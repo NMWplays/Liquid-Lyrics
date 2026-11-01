@@ -1,0 +1,6 @@
+node_modules/
+dist/
+liquid-lyrics-syncs/
+server/
+spicy-lyrics-main/
+*.bak
