@@ -186,7 +186,6 @@ export function createToggle(read: () => boolean, write: (value: boolean) => voi
   };
 
   let fallback = 0;
-  // Without frames (a hidden window) the springs never settle.
   const settleSoon = () => {
     window.clearTimeout(fallback);
     fallback = window.setTimeout(() => {

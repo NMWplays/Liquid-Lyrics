@@ -7,7 +7,6 @@ const LIQUIFY_GLASS_CLASS = "ll-liquify-glass";
 const LIQUIFY_GLASS_ID = "glass-filter--r1-7";
 const FALLBACK_BACKDROP = "blur(32px)";
 const SECTION_SELECTOR = NPV_SECTION;
-// Our sidebar card is one of the NPV sections too.
 const OWN_SURFACES = '[class*="liquid-lyrics"]';
 const ACCENT_EDGE = "var(--liquid-lyrics-accent-outline)";
 

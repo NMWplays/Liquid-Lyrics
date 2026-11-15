@@ -2,9 +2,11 @@ import { cachedTranslation, translate, translationLanguage, type Translation } f
 import type { TranslationLayout } from "@/lib/settings";
 import type { LineRecord } from "@/ui/lyrics/render";
 
+type Unit = { anchor: HTMLElement; text: string; background: boolean; el: HTMLElement | null };
+
 export class Translator {
   private records: LineRecord[] = [];
-  private readonly elements = new Map<LineRecord, HTMLElement>();
+  private readonly units = new Map<LineRecord, Unit[]>();
   private enabled = false;
   private layout: TranslationLayout = "below";
   private generation = 0;
@@ -18,11 +20,14 @@ export class Translator {
 
   clear() {
     this.generation++;
-    for (const [record, el] of this.elements) {
-      el.remove();
+    for (const [record, units] of this.units) {
+      for (const unit of units) {
+        unit.el?.remove();
+        unit.anchor.classList.remove("ll-translated");
+      }
       record.el.classList.remove("ll-has-translation");
     }
-    this.elements.clear();
+    this.units.clear();
     this.records = [];
   }
 
@@ -31,82 +36,105 @@ export class Translator {
     const generation = this.generation;
     if (layout !== this.layout) {
       this.layout = layout;
-      for (const [record, el] of this.elements) {
-        this.place(record, el);
+      for (const [record, units] of this.units) {
+        for (const unit of units) if (unit.el?.isConnected) this.place(unit);
         this.onContentChanged(record);
       }
     }
 
     for (const record of this.records) {
-      if (!enabled) {
-        this.remove(record);
-        continue;
-      }
-      const text = sourceText(record);
-      if (!text) continue;
-
-      const cached = cachedTranslation(text);
-      if (cached !== undefined) {
-        this.show(record, text, cached);
-      } else if (allowFetch) {
-        void translate(text).then((result) => {
-          if (generation === this.generation && this.enabled) this.show(record, text, result);
-        });
+      for (const unit of this.unitsOf(record)) {
+        if (!enabled) {
+          this.hide(record, unit);
+          continue;
+        }
+        const cached = cachedTranslation(unit.text);
+        if (cached !== undefined) {
+          this.show(record, unit, cached);
+        } else if (allowFetch) {
+          void translate(unit.text).then((result) => {
+            if (generation === this.generation && this.enabled) this.show(record, unit, result);
+          });
+        }
       }
     }
   }
 
   reattach(record: LineRecord) {
-    const el = this.elements.get(record);
-    if (el) this.place(record, el);
+    for (const unit of this.units.get(record) ?? []) if (unit.el?.isConnected) this.place(unit);
   }
 
-  private place(record: LineRecord, el: HTMLElement) {
-    if (this.layout === "below") {
-      if (record.el.lastElementChild !== el) record.el.appendChild(el);
-    } else if (record.el.firstElementChild !== el) {
-      record.el.prepend(el);
+  private unitsOf(record: LineRecord): Unit[] {
+    let units = this.units.get(record);
+    if (!units) {
+      units = buildUnits(record);
+      this.units.set(record, units);
     }
+    return units;
   }
 
-  private show(record: LineRecord, text: string, result: Translation | null) {
-    if (!result || result.language === translationLanguage() || same(result.text, text)) {
-      this.remove(record);
+  private show(record: LineRecord, unit: Unit, result: Translation | null) {
+    if (!result || result.language === translationLanguage() || same(result.text, unit.text)) {
+      this.hide(record, unit);
       return;
     }
-
-    let el = this.elements.get(record);
-    if (el?.textContent === result.text && el.parentElement === record.el) {
-      this.place(record, el);
+    if (!unit.el) {
+      unit.el = document.createElement("div");
+      unit.el.className = unit.background ? "ll-translation ll-translation-bg" : "ll-translation";
+    }
+    if (unit.el.textContent === result.text && unit.el.isConnected) {
+      this.place(unit);
       return;
     }
-    if (!el) {
-      el = document.createElement("div");
-      el.className = "ll-translation";
-      this.elements.set(record, el);
-    }
-    el.lang = translationLanguage();
-    el.textContent = result.text;
-    this.place(record, el);
+    unit.el.lang = translationLanguage();
+    unit.el.textContent = result.text;
+    this.place(unit);
+    unit.anchor.classList.add("ll-translated");
     record.el.classList.add("ll-has-translation");
     this.onContentChanged(record);
   }
 
-  private remove(record: LineRecord) {
-    const el = this.elements.get(record);
-    if (!el) return;
-    el.remove();
-    this.elements.delete(record);
-    record.el.classList.remove("ll-has-translation");
+  private place(unit: Unit) {
+    const el = unit.el!;
+    if (this.layout === "below") {
+      if (unit.anchor.nextElementSibling !== el) unit.anchor.after(el);
+    } else if (unit.anchor.previousElementSibling !== el) {
+      unit.anchor.before(el);
+    }
+  }
+
+  private hide(record: LineRecord, unit: Unit) {
+    if (!unit.el?.isConnected) return;
+    unit.el.remove();
+    unit.anchor.classList.remove("ll-translated");
+    if (!(this.units.get(record) ?? []).some((other) => other.el?.isConnected)) {
+      record.el.classList.remove("ll-has-translation");
+    }
     this.onContentChanged(record);
   }
 }
 
-function sourceText(record: LineRecord): string {
-  if (record.line.kind === "interlude") return "";
-  // A word-synced line's text is Spotify's nearest line, cut differently; translate the words shown.
-  const raw =
-    record.line.kind === "syllable" ? record.line.lead.words.map((word) => word.text).join(" ") : record.line.text;
+function buildUnits(record: LineRecord): Unit[] {
+  const line = record.line;
+  if (line.kind === "interlude") return [];
+  if (line.kind !== "syllable") {
+    const text = cleanText(line.text);
+    return text && record.textEl ? [{ anchor: record.textEl, text, background: false, el: null }] : [];
+  }
+
+  const units: Unit[] = [];
+  const lead = cleanText(line.lead.words.map((word) => word.text).join(" "));
+  if (lead && record.leadEl) units.push({ anchor: record.leadEl, text: lead, background: false, el: null });
+  const backgrounds = record.el.querySelectorAll<HTMLElement>(":scope > .ll-background-vocal");
+  line.backgrounds.forEach((vocal, index) => {
+    const text = cleanText(vocal.words.map((word) => word.text).join(" "));
+    const anchor = backgrounds[index];
+    if (text && anchor) units.push({ anchor, text, background: true, el: null });
+  });
+  return units;
+}
+
+function cleanText(raw: string): string {
   const text = raw.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim();
   return text && !/^[♪♫\s]+$/.test(text) ? text : "";
 }

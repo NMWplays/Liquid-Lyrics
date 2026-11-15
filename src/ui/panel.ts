@@ -254,6 +254,7 @@ export function hidePanel() {
   if (!panel) return;
 
   panel.classList.remove("visible");
+  filledVisible = false;
   lyricsView?.setEnabled(false);
   background?.setEnabled(false);
   stopSongCardClock();
@@ -529,7 +530,12 @@ function createTransportRow(): HTMLElement {
     createIconButton("ll-song-card-btn ll-song-card-shuffle", "shuffle", "Shuffle", () =>
       runPlayerAction(() => player()?.setShuffle(!player()?.shuffle)),
     ),
-    createIconButton("ll-song-card-btn", "previous", "Previous", () => runPlayerAction(() => player()?.previous())),
+    createIconButton("ll-song-card-btn", "previous", "Previous", () =>
+      runPlayerAction(() => {
+        noteBack();
+        return player()?.previous();
+      }),
+    ),
     createIconButton("ll-song-card-btn ll-song-card-play", "play", "Play", () => {
       runPlayerAction(togglePlayback);
       window.setTimeout(updateSongCard, 60);
@@ -613,6 +619,7 @@ function createSongCard(): HTMLElement {
   info.append(title, album, artist);
   const volume = createVolumeControl();
   card.append(coverWrap, controls, progress, volume.el, info, heart);
+  volume.attach(card, coverWrap);
 
   songCard = {
     card,
@@ -680,7 +687,6 @@ function heartSvg(): string {
   return `<svg viewBox="${HEART_VIEW_BOX}" aria-hidden="true"><path d="${HEART_PATH}"/></svg>`;
 }
 
-// Every like re-renders Spotify's whole UI, so only the settled result is sent.
 type PendingLike = { uri: string; base: boolean; liked: boolean; sent: boolean; timer: number };
 let pendingLike: PendingLike | null = null;
 
@@ -757,12 +763,11 @@ function layoutSongCard(style: string) {
   pill?.classList.toggle("ll-pill-has-transport", Boolean(panel && isMaximized(panel)));
 
   const heart = refs.heart;
-  const volume = refs.volume.el;
-  volume.hidden = !isVolumeShown(style);
+  refs.volume.el.hidden = !isVolumeShown(style);
+  refs.volume.relayout();
 
   if (style === "cover" || style === "canvas") {
     if (heart.parentElement !== overlay) overlay.append(heart, progress, controls);
-    if (volume.previousElementSibling !== controls) controls.after(volume);
     if (overlay.lastElementChild !== refs.canvasStage) overlay.appendChild(refs.canvasStage);
     layoutCanvasPieces(style === "canvas");
     return;
@@ -771,7 +776,6 @@ function layoutSongCard(style: string) {
   if (heart.parentElement !== card) card.appendChild(heart);
   if (controls.parentElement !== card) card.insertBefore(controls, info);
   if (progress.parentElement !== card) card.insertBefore(progress, info);
-  if (volume.previousElementSibling !== progress) progress.after(volume);
   layoutCanvasPieces(false);
 }
 
@@ -955,10 +959,88 @@ function setButtonIcon(button: HTMLElement | null, icon: IconName) {
   button.innerHTML = ICONS[icon];
 }
 
+const FLIP_OUT_MS = 180;
+const FLIP_IN_MS = 520;
+const FLIP_LOAD_WAIT_MS = 400;
+let shownTrack = "";
+let flipping = false;
+let filledVisible = false;
+let backAt = 0;
+
+function noteBack() {
+  backAt = Date.now();
+}
+
+function isFlipOn(style: CardStyle): boolean {
+  const settings = getSettings();
+  if (style === "cover") return settings.cardFlipCover;
+  if (style === "canvas") return settings.cardFlipCanvas;
+  return settings.cardFlipDefault;
+}
+
 function updateSongCard() {
   const refs = songCard;
-  if (!refs) return;
+  if (!refs || flipping) return;
 
+  const uri = getCurrentTrackUri();
+  const changed = Boolean(uri && shownTrack && uri !== shownTrack);
+  shownTrack = uri || shownTrack;
+  const visible = isPanelVisible();
+  const flip = changed && visible && filledVisible && isFlipOn(activeCardStyle()) && !prefersReducedMotion();
+  filledVisible = visible;
+  if (flip) {
+    flipSongCard(refs);
+    return;
+  }
+  fillSongCard(refs);
+}
+
+function flipSongCard(refs: SongCardRefs) {
+  const target = activeCardStyle() === "cover" ? refs.cover.parentElement! : refs.card;
+  const dir = Date.now() - backAt < 1500 ? -1 : 1;
+  backAt = 0;
+  const depth = Math.round(Math.max(520, target.offsetWidth * 5.5));
+  const turn = (deg: number) => `perspective(${depth}px) rotateY(${deg}deg)`;
+
+  flipping = true;
+  refs.volume.hide();
+  const away = target.animate([{ transform: turn(0), transformOrigin: "50% 50%" }, { transform: turn(90 * dir), transformOrigin: "50% 50%" }], {
+    duration: FLIP_OUT_MS,
+    easing: "cubic-bezier(0.55, 0, 0.8, 0.4)",
+    fill: "forwards",
+  });
+  away.onfinish = () => {
+    flipping = false;
+    fillSongCard(refs);
+    const start = performance.now();
+    const turnIn = () => {
+      const img = refs.cover;
+      const ready = !img.getAttribute("src") || (img.complete && img.naturalWidth > 0);
+      if (!ready && performance.now() - start < FLIP_LOAD_WAIT_MS) {
+        requestAnimationFrame(turnIn);
+        return;
+      }
+      const back = target.animate(
+        [
+          { transform: turn(-90 * dir), transformOrigin: "50% 50%", easing: "cubic-bezier(0.2, 0.7, 0.3, 1)" },
+          { transform: turn(9 * dir), transformOrigin: "50% 50%", offset: 0.6, easing: "ease-in-out" },
+          { transform: turn(-2.5 * dir), transformOrigin: "50% 50%", offset: 0.83, easing: "ease-in-out" },
+          { transform: turn(0), transformOrigin: "50% 50%" },
+        ],
+        { duration: FLIP_IN_MS },
+      );
+      away.cancel();
+      back.onfinish = () => back.cancel();
+    };
+    turnIn();
+  };
+}
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+function fillSongCard(refs: SongCardRefs) {
   const track = getCurrentTrackInfo();
 
   if (track.cover) {
@@ -1283,6 +1365,21 @@ function registerPlayerStateListeners() {
     updateSongCardPlaybackState();
     updateSongCardProgress();
   });
+
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if ((event.target as Element | null)?.closest?.('[data-testid="control-button-skip-back"]')) noteBack();
+    },
+    true,
+  );
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.ctrlKey && event.key === "ArrowLeft") noteBack();
+    },
+    true,
+  );
 }
 
 function runPlayerAction(action: () => unknown) {
@@ -1596,6 +1693,7 @@ function exitMaximized(panel: HTMLElement) {
 
   if (shouldClose) {
     panel.classList.remove("visible");
+  filledVisible = false;
     lyricsView?.setEnabled(false);
     background?.setEnabled(false);
     stopSongCardClock();

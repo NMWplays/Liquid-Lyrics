@@ -1,12 +1,10 @@
 import {
   clamp,
-  getBackgroundImage,
   getSettings,
   resetSettings,
   setBackgroundMode,
   SETTING_RANGES,
   setSetting,
-  storeBackgroundFile,
   type BackgroundMode,
   type BackgroundSource,
   type CanvasPiece,
@@ -22,6 +20,7 @@ import { hideTooltip, registerTooltip } from "@/ui/tooltip";
 import { scrollOffsetFor } from "@/lib/dom/scroll";
 import { SmoothScroller } from "@/ui/lyrics/smoothScroll";
 import { createToggle, TOGGLE_FILTER_SVG } from "@/ui/settings/toggle";
+import { closeGallery, isGalleryOpen, openGallery } from "@/ui/settings/gallery";
 
 const OVERLAY_ID = "liquid-lyrics-settings-overlay";
 const CLOSE_FALLBACK_MS = 500;
@@ -101,6 +100,7 @@ export function closeSettingsMenu() {
   document.removeEventListener("keydown", onKeyDown, true);
   closeSelectMenu();
   closeColorPicker();
+  closeGallery();
   hideTooltip();
   bodyScroller?.destroy();
   bodyScroller = null;
@@ -138,6 +138,10 @@ function onKeyDown(event: KeyboardEvent) {
   event.preventDefault();
   event.stopPropagation();
 
+  if (isGalleryOpen()) {
+    closeGallery();
+    return;
+  }
   if (openSelect) {
     closeSelectMenu();
     return;
@@ -487,7 +491,7 @@ function backgroundSection(): SectionSpec {
         rows: [
           createSelectRow<BackgroundMode>(
             "Background mode",
-            "Transparent lets your theme through, colour is a plain colour, image a picture of your choice. Animated is a simple drifting effect made from the cover art; Kawarp looks a lot better but needs more from your graphics card.",
+            "Transparent lets your theme through, colour is a plain colour, image a picture or video of your choice. Animated is a simple drifting effect made from the cover art; Kawarp looks a lot better but needs more from your graphics card.",
             [
               { value: "transparent", label: "Transparent" },
               { value: "color", label: "Color" },
@@ -506,7 +510,7 @@ function backgroundSection(): SectionSpec {
               [
                 { value: "albumArt", label: "Album art" },
                 { value: "url", label: "URL" },
-                { value: "upload", label: "Local file" },
+                { value: "upload", label: "Custom" },
               ],
               () => getSettings().bgSource,
               (value) => setSetting("bgSource", value),
@@ -514,7 +518,7 @@ function backgroundSection(): SectionSpec {
             usesPicture,
           ),
           hiddenUnless(createTextRow("Image URL", "A direct link to an image file.", "bgUrl", "https://..."), usesUrl),
-          hiddenUnless(createFileRow("Local image", "Downscaled and stored in Spotify's local storage."), usesUpload),
+          hiddenUnless(createGalleryRow("Background gallery", "Your own images or videos, stored in Spotify. Pick one as the background."), usesUpload),
         ],
       },
       {
@@ -654,15 +658,32 @@ function songCardSection(): SectionSpec {
         title: "Volume slider",
         rows: [
           hiddenUnless(
-            createToggleRow("Default style", "A volume slider under the progress bar.", "cardVolumeDefault"),
+            createToggleRow("Default style", "Floats out of the cover to the left while you use the card.", "cardVolumeDefault"),
             () => usesCardStyle("default"),
           ),
           hiddenUnless(
-            createToggleRow("Cover style", "A volume slider under the transport, revealed with it.", "cardVolumeCover"),
+            createToggleRow("Cover style", "Floats out of the cover to the left while you use the card.", "cardVolumeCover"),
             () => usesCardStyle("cover"),
           ),
           hiddenUnless(
-            createToggleRow("Canvas style", "A volume slider under the transport, revealed with it.", "cardVolumeCanvas"),
+            createToggleRow("Canvas style", "Floats out of the clip to the left while you use the card.", "cardVolumeCanvas"),
+            () => usesCardStyle("canvas"),
+          ),
+        ],
+      },
+      {
+        title: "Flip on song change",
+        rows: [
+          hiddenUnless(
+            createToggleRow("Default style", "The whole card flips over to the next song.", "cardFlipDefault"),
+            () => usesCardStyle("default"),
+          ),
+          hiddenUnless(
+            createToggleRow("Cover style", "The artwork flips over to the next song.", "cardFlipCover"),
+            () => usesCardStyle("cover"),
+          ),
+          hiddenUnless(
+            createToggleRow("Canvas style", "The whole card flips over to the next song.", "cardFlipCanvas"),
             () => usesCardStyle("canvas"),
           ),
         ],
@@ -1277,42 +1298,16 @@ function hsvToRgb({ h, s, v }: Hsv): Rgb {
   return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
 }
 
-function createFileRow(label: string, hint: string, isEnabled: () => boolean = () => true): HTMLElement {
+function createGalleryRow(label: string, hint: string): HTMLElement {
   const { row, controls } = createRow(label, hint);
-
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.hidden = true;
 
   const button = document.createElement("button");
   button.type = "button";
   button.className = "ll-settings-surface ll-settings-action-btn";
-  button.addEventListener("click", () => input.click());
+  button.textContent = "Open gallery";
+  button.addEventListener("click", () => openGallery(getHost(), runSync));
 
-  input.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    if (!file) return;
-    button.textContent = "Storing...";
-    const stored = await storeBackgroundFile(file).catch(() => false);
-    input.value = "";
-    if (!stored) {
-      button.textContent = "Too large — try a smaller image";
-      window.setTimeout(runSync, 2600);
-      return;
-    }
-    runSync();
-  });
-
-  controls.append(button, input);
-
-  registerSync(() => {
-    const enabled = isEnabled();
-    row.classList.toggle("is-disabled", !enabled);
-    button.disabled = !enabled;
-    button.textContent = getBackgroundImage() ? "Replace image" : "Choose image";
-  });
-
+  controls.append(button);
   return row;
 }
 

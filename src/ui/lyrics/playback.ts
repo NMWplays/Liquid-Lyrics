@@ -31,7 +31,6 @@ let pauseIntentTrack = "";
 
 let registered = false;
 
-// Spotify's state only; getPositionState returns the last anchor, not the current position.
 export function getPlayerProgress(): number {
   const now = performance.now();
   const track = getCurrentTrackUri();
@@ -120,7 +119,7 @@ export function registerPlaybackSync() {
   );
 }
 
-// Spotify reports a pause ~280ms late, at the position of the click.
+// Spotify reports a pause ~280ms late.
 function notePauseIntent() {
   pauseIntentMs = getPlayerProgress();
   pauseIntentAt = performance.now();
@@ -135,7 +134,7 @@ function settle(ms: number, event: number, track: string, now: number, playing: 
   return clampToTrack(ms);
 }
 
-// After an automatic skip the new state lags the real start by ~80ms.
+// After an auto-skip the state lags ~80ms.
 function naturalStart(now: number, event: number): number {
   if (!wasPlaying || now - lastTickNow > 250 || anchorDuration <= 0) return event;
   const endedAt = anchorNow + (anchorDuration - anchorMs);

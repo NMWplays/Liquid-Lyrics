@@ -1,7 +1,8 @@
+import { getLibraryUrl, isLibraryVideo } from "@/lib/backgroundLibrary";
+
 export const SETTINGS_EVENT = "liquid-lyrics:settings";
 
 const STORAGE_KEY = "liquid-lyrics-settings";
-const BG_IMAGE_KEY = "liquid-lyrics-bg-image";
 
 export type SpotifyLyricsButtonMode = "keep" | "hide" | "override";
 
@@ -56,6 +57,9 @@ export type Settings = {
   cardVolumeDefault: boolean;
   cardVolumeCover: boolean;
   cardVolumeCanvas: boolean;
+  cardFlipDefault: boolean;
+  cardFlipCover: boolean;
+  cardFlipCanvas: boolean;
   cardRadius: number;
   cardCoverRadius: number;
   cardCanvasTitle: CanvasPiece;
@@ -129,6 +133,9 @@ export const DEFAULT_SETTINGS: Settings = {
   cardVolumeDefault: true,
   cardVolumeCover: true,
   cardVolumeCanvas: true,
+  cardFlipDefault: true,
+  cardFlipCover: true,
+  cardFlipCanvas: true,
   cardRadius: 20,
   cardCoverRadius: 20,
   cardCanvasTitle: "overlay",
@@ -186,7 +193,19 @@ let cached: Settings | null = null;
 export function getSettings(): Settings {
   if (cached) return cached;
   cached = { ...DEFAULT_SETTINGS, ...readStored() };
+  turnFlipOnOnce(cached);
   return cached;
+}
+
+const FLIP_ON_KEY = "liquid-lyrics-flip-on";
+
+function turnFlipOnOnce(settings: Settings) {
+  try {
+    if (localStorage.getItem(FLIP_ON_KEY)) return;
+    localStorage.setItem(FLIP_ON_KEY, "1");
+    settings.cardFlipDefault = settings.cardFlipCover = settings.cardFlipCanvas = true;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch {}
 }
 
 export function getSetting<K extends keyof Settings>(key: K): Settings[K] {
@@ -246,23 +265,11 @@ export function getLastVisibleBackgroundMode(): BackgroundMode {
   return lastVisibleMode === "transparent" ? "kawarp" : lastVisibleMode;
 }
 
-export function getBackgroundImage(): string {
-  try {
-    return localStorage.getItem(BG_IMAGE_KEY) || "";
-  } catch {
-    return "";
-  }
-}
-
-export function setBackgroundImage(dataUrl: string): boolean {
-  try {
-    localStorage.setItem(BG_IMAGE_KEY, dataUrl);
-  } catch {
-    return false;
-  }
-  applySettings();
-  window.dispatchEvent(new Event(SETTINGS_EVENT));
-  return true;
+export function isBackgroundVideo(mode?: BackgroundMode): boolean {
+  const settings = getSettings();
+  const active = mode ?? settings.bgMode;
+  if (active === "color" || active === "transparent") return false;
+  return settings.bgSource === "upload" && isLibraryVideo() && !!getLibraryUrl();
 }
 
 export function getBackgroundImageUrl(coverUrl: string, mode?: BackgroundMode): string {
@@ -270,41 +277,8 @@ export function getBackgroundImageUrl(coverUrl: string, mode?: BackgroundMode): 
   const active = mode ?? settings.bgMode;
   if (active === "color" || active === "transparent") return "";
   if (settings.bgSource === "url") return settings.bgUrl.trim();
-  if (settings.bgSource === "upload") return getBackgroundImage();
+  if (settings.bgSource === "upload") return getLibraryUrl();
   return coverUrl;
-}
-
-export async function storeBackgroundFile(file: File): Promise<boolean> {
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
-  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = dataUrl;
-  });
-
-  const maxEdge = 1600;
-  const ratio = Math.min(1, maxEdge / Math.max(image.width, image.height));
-  const width = Math.max(1, Math.round(image.width * ratio));
-  const height = Math.max(1, Math.round(image.height * ratio));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) return false;
-  context.drawImage(image, 0, 0, width, height);
-
-  for (const quality of [0.92, 0.85, 0.7, 0.5, 0.35]) {
-    if (setBackgroundImage(canvas.toDataURL("image/jpeg", quality))) return true;
-  }
-  return false;
 }
 
 export function applySettings() {

@@ -31,6 +31,13 @@ export function notify(message: string): void {
   else console.log("[Liquid Lyrics]", message);
 }
 
+export function watchWindowControls(): void {
+  const sync = () =>
+    document.documentElement.classList.toggle("ll-custom-window-controls", Boolean(kit()?.Window?.customControls));
+  kit()?.Window?.on?.("controls", sync);
+  sync();
+}
+
 export function windowControlsStrip(): { width: number; height: number } {
   const rect = document.querySelector(".spotikit-window-controls")?.getBoundingClientRect();
   if (!rect || !rect.width) return { width: 135, height: 64 };

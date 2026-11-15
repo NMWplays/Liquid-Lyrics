@@ -14,12 +14,14 @@ import { injectStyles } from "@/ui/styles";
 import { registerPlaybackSync } from "@/ui/lyrics/playback";
 import { CUSTOM_SYNC_EVENT } from "@/lib/customSync/store";
 import { applySettings } from "@/lib/settings";
+import { initBackgroundLibrary } from "@/lib/backgroundLibrary";
 import { registerSpotifyLyricsButtonOverride } from "@/lib/spotifyLyricsButton";
 import { registerSettingsMenuItem } from "@/ui/settings/menu";
 import { registerThemeBridge } from "@/ui/themeBridge";
 import { registerAccent } from "@/lib/accent";
-import { currentItem, isSpotiKitReady, onPlayer, platform } from "@/lib/spotikit";
+import { currentItem, isSpotiKitReady, onPlayer, platform, watchWindowControls } from "@/lib/spotikit";
 import { NOW_PLAYING_EXTRA_CONTROLS } from "@/lib/dom/spotifySelectors";
+import { onStop } from "@/lifecycle/runtime";
 
 async function main() {
   const globalScope = window as unknown as { __liquidLyricsLoaded?: boolean };
@@ -33,7 +35,9 @@ async function main() {
 
   injectStyles();
   applySettings();
+  void initBackgroundLibrary();
   registerThemeBridge();
+  watchWindowControls();
   registerAccent();
   registerSettingsMenuItem();
   registerSpotifyLyricsButtonOverride();
@@ -135,7 +139,8 @@ async function main() {
 
   const history = platform()?.History;
   if (typeof history?.listen === "function") {
-    history.listen(() => closePanelForRouteChange(true));
+    const unlisten = history.listen(() => closePanelForRouteChange(true));
+    if (typeof unlisten === "function") onStop(unlisten);
   }
 
   let wasPanelVisible = isPanelVisible();
@@ -172,7 +177,13 @@ async function main() {
   onSongChange();
 }
 
-main();
+export default function start(): void {
+  onStop(() => {
+    const panel = document.getElementById("liquid-lyrics-panel");
+    if (panel && document.fullscreenElement === panel) void document.exitFullscreen?.();
+  });
+  void main();
+}
 
 function getRouteKey(): string {
   const history = platform()?.History;

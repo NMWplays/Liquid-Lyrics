@@ -4,13 +4,17 @@ import {
   getBackgroundImageUrl,
   getLastVisibleBackgroundMode,
   getSettings,
+  isBackgroundVideo,
   type BackgroundMode,
 } from "@/lib/settings";
+import { onStop } from "@/lifecycle/runtime";
 
 const CROSSFADE_MS = 600;
 const FADE_MS = 600;
 const MAX_KAWARP_PX = 1600;
 const RESIZE_SETTLE_MS = 160;
+const VIDEO_FPS = 30;
+const VIDEO_CLASS = "ll-bg-video";
 
 const FORCED_LOOK = {
   canvasFilter: "brightness(62%) contrast(104%)",
@@ -39,6 +43,8 @@ export class LyricsBackground {
   private instantSwap = false;
   private pendingReveal = false;
   private resizeObserver: ResizeObserver | null = null;
+  private kawarpVideo: HTMLVideoElement | null = null;
+  private kawarpVideoFrame = 0;
 
   private coverUrl = "";
   private useSetA = true;
@@ -65,6 +71,7 @@ export class LyricsBackground {
       this.el.style.setProperty("--ll-bg-scale", "1");
       this.el.style.setProperty("--ll-bg-spin-duration", "30000ms");
     }
+    onStop(() => this.destroy());
   }
 
   private get activeMode(): BackgroundMode {
@@ -123,6 +130,7 @@ export class LyricsBackground {
   setEnabled(enabled: boolean) {
     if (this.enabled === enabled) return;
     this.enabled = enabled;
+    this.syncVideos();
     if (this.kawarpLayers.length === 0) return;
 
     if (!enabled) {
@@ -134,7 +142,25 @@ export class LyricsBackground {
     }
   }
 
+  private syncVideos() {
+    for (const video of Array.from(this.el.querySelectorAll<HTMLVideoElement>("video." + VIDEO_CLASS))) {
+      const host = video.parentElement;
+      const shown = !host?.classList.contains("ll-bg-tile-face") || host.classList.contains("active");
+      if (this.enabled && shown) void video.play().catch(() => {});
+      else video.pause();
+    }
+    if (this.kawarpVideo) {
+      if (this.enabled) void this.kawarpVideo.play().catch(() => {});
+      else this.kawarpVideo.pause();
+    }
+  }
+
+  private releaseVideos() {
+    for (const video of Array.from(this.el.querySelectorAll<HTMLVideoElement>("video." + VIDEO_CLASS))) releaseVideo(video);
+  }
+
   destroy() {
+    this.releaseVideos();
     window.clearTimeout(this.fadeOutTimer);
     window.clearTimeout(this.animatedSwapTimer);
     this.animatedToken++;
@@ -191,6 +217,7 @@ private render() {
     window.clearTimeout(this.animatedSwapTimer);
     this.animatedToken++;
     this.teardownKawarp();
+    this.releaseVideos();
     this.el.replaceChildren();
     this.tiles = [];
     this.faces = [];
@@ -233,7 +260,9 @@ private render() {
   private renderImage() {
     const url = getBackgroundImageUrl(this.coverUrl, this.activeMode);
     if (!this.imageLayer) return;
-    this.imageLayer.style.backgroundImage = url ? `url("${cssUrl(url)}")` : "";
+    const video = !!url && isBackgroundVideo(this.activeMode);
+    setMedia(this.imageLayer, url ? `url("${cssUrl(url)}")` : "", video ? url : null);
+    this.syncVideos();
   }
 
   private renderAnimated() {
@@ -252,22 +281,24 @@ private render() {
       return;
     }
 
-    if (url === this.lastAnimatedUrl) {
+    const video = isBackgroundVideo(this.activeMode);
+    const key = video ? "video:" + url : url;
+    if (key === this.lastAnimatedUrl) {
       this.finishHiddenSwap();
       return;
     }
-    this.lastAnimatedUrl = url;
+    this.lastAnimatedUrl = key;
 
     const instant = this.instantSwap;
     this.instantSwap = false;
-    void this.crossfadeAnimated(url, instant);
+    void this.crossfadeAnimated(url, instant, video);
   }
 
-  private async crossfadeAnimated(url: string, instant: boolean) {
+  private async crossfadeAnimated(url: string, instant: boolean, video = false) {
     const token = ++this.animatedToken;
 
     try {
-      await preloadImage(url);
+      await (video ? whenVideoReady(url) : preloadImage(url));
     } catch {
       if (token === this.animatedToken) this.lastAnimatedUrl = "";
       this.finishHiddenSwap();
@@ -285,11 +316,12 @@ private render() {
     if (instant) this.suppressTransitions();
 
     for (const face of incoming) {
-      face.style.backgroundImage = `url("${cssUrl(url)}")`;
+      setMedia(face, `url("${cssUrl(url)}")`, video ? url : null);
       face.classList.add("active", "is-front");
     }
     for (const face of outgoing) face.classList.remove("is-front");
     this.useSetA = !this.useSetA;
+    this.syncVideos();
 
     this.finishHiddenSwap();
 
@@ -297,6 +329,7 @@ private render() {
     this.animatedSwapTimer = window.setTimeout(() => {
       if (token !== this.animatedToken) return;
       for (const face of outgoing) face.classList.remove("active");
+      this.syncVideos();
     }, CROSSFADE_MS + 80);
   }
 
@@ -347,34 +380,69 @@ private render() {
     }
 
     const url = getBackgroundImageUrl(this.coverUrl, this.activeMode);
-    if (!url || url === this.lastKawarpUrl) {
+    const video = !!url && isBackgroundVideo(this.activeMode);
+    const key = video ? "video:" + url : url;
+    if (!url || key === this.lastKawarpUrl) {
       this.finishHiddenSwap();
       return;
     }
-    this.lastKawarpUrl = url;
+    this.lastKawarpUrl = key;
     const instant = this.instantSwap;
     this.instantSwap = false;
-    void this.crossfadeKawarp(url, instant);
+    void this.crossfadeKawarp(url, instant, video);
   }
 
-  private async crossfadeKawarp(url: string, instant = false) {
-    const token = ++this.kawarpToken;
+  private stopKawarpVideo() {
+    const video = this.kawarpVideo;
+    this.kawarpVideo = null;
+    if (!video) return;
+    if (this.kawarpVideoFrame) video.cancelVideoFrameCallback(this.kawarpVideoFrame);
+    this.kawarpVideoFrame = 0;
+    releaseVideo(video);
+  }
 
-    let source: HTMLImageElement;
+  private feedKawarpVideo(video: HTMLVideoElement, renderer: Kawarp) {
+    let last = 0;
+    const step = (now: number) => {
+      if (this.kawarpVideo !== video) return;
+      this.kawarpVideoFrame = video.requestVideoFrameCallback(step);
+      if (now - last < 1000 / VIDEO_FPS - 4) return;
+      last = now;
+      try {
+        renderer.loadImageElement(video);
+      } catch {
+      }
+    };
+    this.kawarpVideoFrame = video.requestVideoFrameCallback(step);
+  }
+
+  private async crossfadeKawarp(url: string, instant = false, video = false) {
+    const token = ++this.kawarpToken;
+    this.stopKawarpVideo();
+
+    let source: HTMLImageElement | HTMLVideoElement;
     try {
-      source = await this.decodeImage(url);
+      source = video ? await openVideo(url) : await this.decodeImage(url);
     } catch {
       if (token === this.kawarpToken) this.lastKawarpUrl = "";
       this.finishHiddenSwap();
       return;
     }
-    if (token !== this.kawarpToken || this.kawarpLayers.length < 2) return;
+    if (token !== this.kawarpToken || this.kawarpLayers.length < 2) {
+      if (source instanceof HTMLVideoElement) releaseVideo(source);
+      return;
+    }
 
     const incoming = this.useKawarpA ? this.kawarpLayers[0] : this.kawarpLayers[1];
     const outgoing = this.useKawarpA ? this.kawarpLayers[1] : this.kawarpLayers[0];
 
     this.sizeKawarpCanvas(incoming);
     incoming.renderer.loadImageElement(source);
+    if (source instanceof HTMLVideoElement) {
+      this.kawarpVideo = source;
+      this.feedKawarpVideo(source, incoming.renderer);
+      this.syncVideos();
+    }
     if (this.enabled) {
       incoming.renderer.start();
     } else {
@@ -468,6 +536,7 @@ private render() {
 
   private teardownKawarp() {
     this.kawarpToken++;
+    this.stopKawarpVideo();
     window.clearTimeout(this.kawarpSwapTimer);
     this.kawarpSwapTimer = 0;
     window.clearTimeout(this.resizeSettleTimer);
@@ -484,10 +553,71 @@ private render() {
         layer.renderer.dispose();
       } catch {
       }
+      layer.canvas.getContext("webgl")?.getExtension("WEBGL_lose_context")?.loseContext();
     }
     this.kawarpLayers = [];
     this.useKawarpA = true;
   }
+}
+
+function releaseVideo(video: HTMLVideoElement) {
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+}
+
+function setMedia(el: HTMLElement, image: string, video: string | null) {
+  let player = el.querySelector<HTMLVideoElement>(":scope > video." + VIDEO_CLASS);
+  if (video) {
+    el.style.backgroundImage = "none";
+    if (!player) {
+      player = document.createElement("video");
+      player.className = VIDEO_CLASS;
+      player.muted = true;
+      player.loop = true;
+      player.playsInline = true;
+      el.appendChild(player);
+    }
+    if (player.getAttribute("src") !== video) player.src = video;
+    return;
+  }
+  if (player) {
+    releaseVideo(player);
+    player.remove();
+  }
+  el.style.backgroundImage = image;
+}
+
+const videosReady = new Set<string>();
+
+function whenVideoReady(url: string): Promise<void> {
+  if (videosReady.has(url)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.muted = true;
+    video.preload = "auto";
+    const end = () => {
+      videosReady.add(url);
+      releaseVideo(video);
+      resolve();
+    };
+    video.addEventListener("loadeddata", end, { once: true });
+    video.addEventListener("error", end, { once: true });
+    video.src = url;
+  });
+}
+
+function openVideo(url: string): Promise<HTMLVideoElement> {
+  const video = document.createElement("video");
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.src = url;
+  return new Promise<void>((resolve, reject) => {
+    video.addEventListener("loadeddata", () => resolve(), { once: true });
+    video.addEventListener("error", () => reject(video.error), { once: true });
+  }).then(() => video);
 }
 
 function cssUrl(url: string): string {
