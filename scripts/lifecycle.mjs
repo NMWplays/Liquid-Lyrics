@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import ts from "typescript";
 
 const TIMERS = [
@@ -196,13 +196,17 @@ function inlineWorkerPlugin() {
   return {
     name: "inline-worker",
     setup(build) {
-      build.onResolve({ filter: /\?worker$/ }, (args) => ({
-        path: resolve(args.resolveDir, args.path.replace(/\?worker$/, "")),
-        namespace: "inline-worker",
-      }));
+      build.onResolve({ filter: /\?worker$/ }, (args) => {
+        const file = resolve(args.resolveDir, args.path.replace(/\?worker$/, ""));
+        return {
+          path: relative(process.cwd(), file).replace(/\\/g, "/"),
+          namespace: "inline-worker",
+          pluginData: { file },
+        };
+      });
       build.onLoad({ filter: /.*/, namespace: "inline-worker" }, async (args) => {
         const result = await build.esbuild.build({
-          entryPoints: [args.path],
+          entryPoints: [args.pluginData.file],
           bundle: true,
           write: false,
           format: "iife",
