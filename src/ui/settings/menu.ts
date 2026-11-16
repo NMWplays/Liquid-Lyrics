@@ -15,6 +15,7 @@ import {
   type NumericSetting,
   type Settings,
   type SpotifyLyricsButtonMode,
+  type SpotifyFullscreenButtonMode,
 } from "@/lib/settings";
 import { hideTooltip, registerTooltip } from "@/ui/tooltip";
 import { scrollOffsetFor } from "@/lib/dom/scroll";
@@ -343,6 +344,16 @@ function buttonsSection(): SectionSpec {
         ],
         () => getSettings().spotifyLyricsButton,
         (value) => setSetting("spotifyLyricsButton", value),
+      ),
+      createSelectRow<SpotifyFullscreenButtonMode>(
+        "Spotify's fullscreen button",
+        "What the fullscreen button in the now playing bar opens: Spotify's own fullscreen view, or Liquid Lyrics in fullscreen.",
+        [
+          { value: "spotify", label: "Spotify fullscreen" },
+          { value: "liquidLyrics", label: "Liquid Lyrics fullscreen" },
+        ],
+        () => getSettings().spotifyFullscreenButton,
+        (value) => setSetting("spotifyFullscreenButton", value),
       ),
       createToggleRow(
         "Liquid Lyrics button",
@@ -1093,6 +1104,15 @@ function createColorRow(
 
 let openPicker: { anchor: HTMLElement; el: HTMLElement; dispose: () => void } | null = null;
 
+function layoutRect(el: HTMLElement) {
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  return { left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, width: w, height: h };
+}
+
 function openColorPicker(anchor: HTMLElement, read: () => string, write: (value: string) => void) {
   closeColorPicker();
 
@@ -1160,7 +1180,7 @@ function openColorPicker(anchor: HTMLElement, read: () => string, write: (value:
 
   paint();
 
-  const rect = anchor.getBoundingClientRect();
+  const rect = layoutRect(anchor);
   const margin = 6;
   const bounds = document.querySelector<HTMLElement>(".ll-settings-body")?.getBoundingClientRect();
   const height = popover.offsetHeight;
@@ -1440,7 +1460,7 @@ function openSelectMenu<T extends string>(
   getHost().appendChild(menu);
   button.classList.add("isOpen");
 
-  const rect = button.getBoundingClientRect();
+  const rect = layoutRect(button);
   const margin = 6;
   menu.style.minWidth = `${rect.width}px`;
 

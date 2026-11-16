@@ -192,6 +192,35 @@ export function outerModule(inner) {
   ].join("\n");
 }
 
+function inlineWorkerPlugin() {
+  return {
+    name: "inline-worker",
+    setup(build) {
+      build.onResolve({ filter: /\?worker$/ }, (args) => ({
+        path: resolve(args.resolveDir, args.path.replace(/\?worker$/, "")),
+        namespace: "inline-worker",
+      }));
+      build.onLoad({ filter: /.*/, namespace: "inline-worker" }, async (args) => {
+        const result = await build.esbuild.build({
+          entryPoints: [args.path],
+          bundle: true,
+          write: false,
+          format: "iife",
+          platform: "browser",
+          target: build.initialOptions.target,
+          minify: true,
+          metafile: true,
+        });
+        return {
+          contents: result.outputFiles[0].text,
+          loader: "text",
+          watchFiles: Object.keys(result.metafile.inputs).map((file) => resolve(file)),
+        };
+      });
+    },
+  };
+}
+
 export function addonOptions({ entry, outfile, runtime, globals, remove, plugins = [], define = {}, ...rest }) {
   const runtimePath = resolve(runtime).replace(/\\/g, "/");
   const entryPath = resolve(entry).replace(/\\/g, "/");
@@ -215,6 +244,7 @@ export function addonOptions({ entry, outfile, runtime, globals, remove, plugins
     define: { ...lifecycleDefine, ...define },
     plugins: [
       ...plugins,
+      inlineWorkerPlugin(),
       lifecyclePlugin(runtime),
       {
         name: "spotikit-addon-output",

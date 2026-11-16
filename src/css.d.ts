@@ -7,3 +7,8 @@ declare module '*.svg' {
   const content: string;
   export default content;
 }
+
+declare module '*?worker' {
+  const source: string;
+  export default source;
+}

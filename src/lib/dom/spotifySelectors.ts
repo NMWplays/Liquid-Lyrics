@@ -18,6 +18,8 @@ export const NPV_COVER_IMAGE = ".npv-cover-art-slot img";
 
 export const SPOTIFY_LYRICS_BUTTON = '[data-testid="lyrics-button"]';
 
+export const SPOTIFY_FULLSCREEN_BUTTON = '[data-testid="fullscreen-mode-button"]';
+
 export const NOW_PLAYING_EXTRA_CONTROLS = ".now-playing-bar-extra-controls";
 
 export const USER_WIDGET = '[data-testid="user-widget-link"]';

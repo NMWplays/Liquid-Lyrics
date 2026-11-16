@@ -5,6 +5,7 @@ export const SETTINGS_EVENT = "liquid-lyrics:settings";
 const STORAGE_KEY = "liquid-lyrics-settings";
 
 export type SpotifyLyricsButtonMode = "keep" | "hide" | "override";
+export type SpotifyFullscreenButtonMode = "spotify" | "liquidLyrics";
 
 export type BackgroundMode = "transparent" | "color" | "image" | "animated" | "kawarp";
 export type BackgroundSource = "albumArt" | "url" | "upload";
@@ -16,6 +17,7 @@ export type TranslationLayout = "below" | "main" | "only";
 
 export type Settings = {
   spotifyLyricsButton: SpotifyLyricsButtonMode;
+  spotifyFullscreenButton: SpotifyFullscreenButtonMode;
   showOwnButton: boolean;
 
   showTitle: boolean;
@@ -92,6 +94,7 @@ export type Settings = {
 
 export const DEFAULT_SETTINGS: Settings = {
   spotifyLyricsButton: "hide",
+  spotifyFullscreenButton: "spotify",
   showOwnButton: true,
 
   showTitle: true,
@@ -390,6 +393,7 @@ function readStored(): Partial<Settings> {
 
 const ENUM_VALUES: Partial<Record<keyof Settings, readonly string[]>> = {
   spotifyLyricsButton: ["keep", "hide", "override"],
+  spotifyFullscreenButton: ["spotify", "liquidLyrics"],
   bgMode: ["transparent", "color", "image", "animated", "kawarp"],
   bgSource: ["albumArt", "url", "upload"],
   cardStyle: ["default", "cover", "canvas"],
